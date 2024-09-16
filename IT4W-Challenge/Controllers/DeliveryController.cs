@@ -9,7 +9,7 @@ namespace IT4W_Challenge.Controllers
     {
         private readonly Graph _graph;
 
-        public DeliveryController()
+        public DeliveryController(bool includeNegativeCycle = false)
         {
             // Inicializa el grafo
             _graph = new Graph(5);
@@ -19,7 +19,10 @@ namespace IT4W_Challenge.Controllers
             _graph.AddEdge(1, 3, 4);
             _graph.AddEdge(1, 4, 6);
             _graph.AddEdge(3, 2, 3);
-            _graph.AddEdge(3, 1, 2);
+            if (includeNegativeCycle)
+            {
+                _graph.AddEdge(3, 1, -8);
+            }
             _graph.AddEdge(4, 3, 1);
 
             // Configura aristas con tiempos
@@ -29,7 +32,7 @@ namespace IT4W_Challenge.Controllers
             _graph.AddTimeEdge(1, 3, 4);
             _graph.AddTimeEdge(1, 4, 6);
             _graph.AddTimeEdge(3, 2, 3);
-            _graph.AddTimeEdge(3, 1, 2);
+            _graph.AddTimeEdge(3, 1, -8);
             _graph.AddTimeEdge(4, 3, 1);
         }
 
@@ -44,6 +47,11 @@ namespace IT4W_Challenge.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]  // Error response
         public IActionResult GetShortestPath(int source, [FromQuery] List<int> destinations)
         {
+            if (destinations == null || !destinations.Any())
+            {
+                return BadRequest("The 'destinations' parameter is required and cannot be empty.");
+            }
+
             try
             {
                 var result = _graph.FindMultipleDestinations(source, destinations);
